@@ -25,20 +25,32 @@ function QuizPlay() {
   const allAnswered = answers.every((a) => a !== null && a !== '');
 
   return (
-    <article style={styles.wrap}>
-      <p style={styles.back}>
-        <Link to="/topics">← back to topics</Link>
+    <article className="main main--narrow" style={{ maxWidth: 720 }}>
+      <p className="meta" style={{ marginBottom: '0.5rem' }}>
+        <Link to="/topics">← Topics</Link>
       </p>
-      <h1 style={{ marginTop: '0.5rem' }}>{quiz.title}</h1>
+      <span className="chip">Quiz</span>
+      <h1 className="topic-title" style={{ marginTop: '0.75rem' }}>
+        {quiz.title}
+      </h1>
       {graded && (
-        <div style={styles.scoreBox}>
-          Score: <b>{graded.correct}</b> / {graded.total}
+        <div className="score-box">
+          {graded.correct} / {graded.total} correct
         </div>
       )}
 
-      <ol style={styles.list}>
+      <ol
+        style={{
+          listStyle: 'none',
+          padding: 0,
+          marginTop: '2rem',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '1rem',
+        }}
+      >
         {quiz.questions.map((q, i) => (
-          <li key={i} style={styles.item}>
+          <li key={i}>
             <QuestionRow
               q={q}
               answer={answers[i] ?? null}
@@ -56,11 +68,11 @@ function QuizPlay() {
         ))}
       </ol>
 
-      <div style={{ marginTop: '1.5rem' }}>
+      <div style={{ marginTop: '2rem' }}>
         {submitted ? (
           <button
             type="button"
-            style={styles.secondary}
+            className="btn btn--secondary"
             onClick={() => {
               setSubmitted(false);
               setAnswers(quiz.questions.map(() => null as Answer));
@@ -71,7 +83,7 @@ function QuizPlay() {
         ) : (
           <button
             type="button"
-            style={styles.primary}
+            className="btn btn--primary btn--lg"
             disabled={!allAnswered}
             onClick={() => setSubmitted(true)}
           >
@@ -91,22 +103,24 @@ function QuestionRow(props: {
   resultCorrect: boolean | undefined;
 }) {
   const { q, answer, onChange, submitted, resultCorrect } = props;
-  const bodyStyle: React.CSSProperties = {
-    ...styles.questionBody,
-    ...(submitted
+  const cls = [
+    'quiz-question',
+    submitted
       ? resultCorrect
-        ? styles.correct
-        : styles.incorrect
-      : {}),
-  };
+        ? 'quiz-question--correct'
+        : 'quiz-question--incorrect'
+      : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
 
   return (
-    <div style={bodyStyle}>
-      <p style={styles.prompt}>{q.prompt}</p>
+    <div className={cls}>
+      <p className="quiz-question__prompt">{q.prompt}</p>
 
       {q.type === 'multiple_choice' &&
         q.choices.map((choice, i) => (
-          <label key={i} style={styles.choice}>
+          <label key={i} className="quiz-question__choice">
             <input
               type="radio"
               name={q.prompt}
@@ -119,9 +133,9 @@ function QuestionRow(props: {
         ))}
 
       {q.type === 'true_false' && (
-        <div style={{ display: 'flex', gap: '1rem' }}>
+        <div style={{ display: 'flex', gap: '1.5rem' }}>
           {[true, false].map((v) => (
-            <label key={String(v)} style={styles.choice}>
+            <label key={String(v)} className="quiz-question__choice">
               <input
                 type="radio"
                 name={q.prompt}
@@ -141,12 +155,14 @@ function QuestionRow(props: {
           value={typeof answer === 'string' ? answer : ''}
           onChange={(e) => onChange(e.target.value)}
           disabled={submitted}
-          style={styles.textInput}
+          className="input"
           placeholder="Type your answer"
         />
       )}
 
-      {submitted && q.explanation && <p style={styles.explanation}>{q.explanation}</p>}
+      {submitted && q.explanation && (
+        <p className="quiz-question__explanation">{q.explanation}</p>
+      )}
     </div>
   );
 }
@@ -176,55 +192,3 @@ function gradeOnClient(
     results,
   };
 }
-
-const styles: Record<string, React.CSSProperties> = {
-  wrap: { maxWidth: 720, margin: '0 auto', fontFamily: 'system-ui, sans-serif', padding: '1.5rem 2rem' },
-  back: { fontSize: '0.85rem', color: '#888' },
-  scoreBox: {
-    background: '#eef',
-    padding: '0.75rem 1rem',
-    borderRadius: 8,
-    marginTop: '1rem',
-    fontSize: '1rem',
-  },
-  list: { listStyle: 'none', padding: 0, marginTop: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' },
-  item: {},
-  questionBody: {
-    padding: '1rem',
-    border: '1px solid #eee',
-    borderRadius: 8,
-    background: '#fff',
-  },
-  correct: { borderColor: '#7c7', background: '#f3fbf3' },
-  incorrect: { borderColor: '#c77', background: '#fbf3f3' },
-  prompt: { margin: 0, marginBottom: '0.5rem', fontWeight: 500 },
-  choice: { display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.25rem 0' },
-  textInput: {
-    width: '100%',
-    padding: '0.4rem 0.6rem',
-    border: '1px solid #ccc',
-    borderRadius: 6,
-    fontFamily: 'inherit',
-  },
-  explanation: {
-    marginTop: '0.5rem',
-    color: '#555',
-    fontSize: '0.85rem',
-    fontStyle: 'italic',
-  },
-  primary: {
-    padding: '0.5rem 1rem',
-    background: '#224',
-    color: '#fff',
-    border: 'none',
-    borderRadius: 6,
-    cursor: 'pointer',
-  },
-  secondary: {
-    padding: '0.5rem 1rem',
-    background: '#fff',
-    border: '1px solid #ccc',
-    borderRadius: 6,
-    cursor: 'pointer',
-  },
-};

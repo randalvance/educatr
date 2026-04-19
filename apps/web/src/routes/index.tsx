@@ -6,32 +6,20 @@ export const Route = createFileRoute('/')({
 
 function Home() {
   return (
-    <main
-      style={{
-        fontFamily: 'system-ui, sans-serif',
-        maxWidth: 640,
-        margin: '4rem auto',
-        padding: '0 1.5rem',
-        lineHeight: 1.5,
-      }}
-    >
-      <h1 style={{ marginBottom: '0.5rem' }}>educatr</h1>
-      <p style={{ color: '#555' }}>Learn anything. Explore topics with AI.</p>
-      <p style={{ marginTop: '2rem' }}>
-        <Link
-          to="/chats"
-          style={{
-            display: 'inline-block',
-            padding: '0.6rem 1rem',
-            background: '#224',
-            color: '#fff',
-            borderRadius: 8,
-            textDecoration: 'none',
-          }}
-        >
-          Open chats →
-        </Link>
+    <main className="landing">
+      <h1 className="landing__title">Learn anything, on your own terms.</h1>
+      <p className="landing__lede">
+        Have a real conversation with a patient teacher. Every chat turns into a lesson
+        you can revisit, quiz yourself on, or group with related ideas.
       </p>
+      <div className="landing__cta">
+        <Link to="/chats" className="btn btn--primary btn--lg">
+          Start a chat →
+        </Link>
+        <Link to="/topics" className="btn btn--secondary btn--lg">
+          Browse topics
+        </Link>
+      </div>
     </main>
   );
 }

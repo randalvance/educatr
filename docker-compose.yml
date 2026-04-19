@@ -1,0 +1,50 @@
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_USER: educatr
+      POSTGRES_PASSWORD: educatr
+      POSTGRES_DB: educatr
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U educatr -d educatr']
+      interval: 2s
+      timeout: 3s
+      retries: 15
+
+  migrate:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      DATABASE_URL: postgres://educatr:educatr@postgres:5432/educatr
+    command: ['bun', '--filter', '@educatr/db', 'db:migrate']
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: 'no'
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      DATABASE_URL: postgres://educatr:educatr@postgres:5432/educatr
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:?set OPENROUTER_API_KEY in .env}
+      OPENROUTER_MODEL_CHAT: ${OPENROUTER_MODEL_CHAT:-}
+      OPENROUTER_MODEL_EXTRACTION: ${OPENROUTER_MODEL_EXTRACTION:-}
+      OPENROUTER_MODEL_EMBEDDING: ${OPENROUTER_MODEL_EMBEDDING:-}
+      NODE_ENV: production
+    ports:
+      - '3000:3000'
+    depends_on:
+      postgres:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+
+volumes:
+  postgres-data:

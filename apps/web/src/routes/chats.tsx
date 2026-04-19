@@ -1,5 +1,7 @@
 import { Link, Outlet, createFileRoute, useRouter } from '@tanstack/react-router';
 import { createChatFn, listChatsFn } from '../server/functions.ts';
+import { ThemeToggle } from '../components/theme-toggle.tsx';
+import { useHotkey } from '../lib/hotkeys.ts';
 
 export const Route = createFileRoute('/chats')({
   component: ChatsLayout,
@@ -16,82 +18,53 @@ function ChatsLayout() {
     router.navigate({ to: '/chats/$chatId', params: { chatId: chat.id } });
   }
 
+  // ⌘N / Ctrl+N creates a new chat from anywhere in /chats.
+  useHotkey('mod+k', () => void handleNewChat());
+
   return (
-    <div style={styles.shell}>
-      <aside style={styles.sidebar}>
-        <div style={styles.sidebarHeader}>
-          <Link to="/" style={styles.brand}>
+    <div className="app-shell">
+      <aside className="sidebar">
+        <div className="sidebar__header">
+          <Link to="/" className="sidebar__brand">
             educatr
           </Link>
-          <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
-            <Link to="/topics" style={{ fontSize: '0.85rem', color: '#555' }}>
-              topics
-            </Link>
-            <button type="button" onClick={handleNewChat} style={styles.newButton}>
-              + New
-            </button>
-          </div>
+          <nav className="sidebar__nav-links">
+            <Link to="/topics">Topics</Link>
+          </nav>
         </div>
-        <nav style={styles.chatList}>
-          {chats.length === 0 ? (
-            <p style={styles.empty}>No chats yet.</p>
-          ) : (
-            chats.map((c) => (
-              <Link
-                key={c.id}
-                to="/chats/$chatId"
-                params={{ chatId: c.id }}
-                style={styles.chatLink}
-                activeProps={{ style: { ...styles.chatLink, ...styles.chatLinkActive } }}
-              >
-                <span style={styles.chatTitle}>{c.title ?? 'Untitled chat'}</span>
-                <span style={styles.chatMeta}>
-                  {new Date(c.updatedAt).toLocaleDateString()}
-                </span>
-              </Link>
-            ))
-          )}
-        </nav>
+
+        <button type="button" onClick={handleNewChat} className="new-chat-button">
+          <span>+ New chat</span>
+          <span className="new-chat-button__kbd">⌘K</span>
+        </button>
+
+        <div className="sidebar__section">Chats</div>
+        {chats.length === 0 ? (
+          <p className="sidebar__empty">No chats yet.</p>
+        ) : (
+          chats.map((c) => (
+            <Link
+              key={c.id}
+              to="/chats/$chatId"
+              params={{ chatId: c.id }}
+              className="sidebar__link"
+              activeProps={{ className: 'sidebar__link sidebar__link--active' }}
+            >
+              <span className="sidebar__link-title">{c.title ?? 'Untitled chat'}</span>
+              <span className="sidebar__link-meta">
+                {new Date(c.updatedAt).toLocaleDateString()}
+              </span>
+            </Link>
+          ))
+        )}
+
+        <div className="sidebar__footer">
+          <ThemeToggle />
+        </div>
       </aside>
-      <section style={styles.main}>
+      <section className="main main--narrow">
         <Outlet />
       </section>
     </div>
   );
 }
-
-const styles: Record<string, React.CSSProperties> = {
-  shell: { display: 'grid', gridTemplateColumns: '260px 1fr', minHeight: '100vh' },
-  sidebar: {
-    borderRight: '1px solid #eee',
-    padding: '1rem',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '0.75rem',
-    background: '#fafafa',
-  },
-  sidebarHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
-  brand: { fontWeight: 600, textDecoration: 'none', color: '#111' },
-  newButton: {
-    padding: '0.3rem 0.6rem',
-    border: '1px solid #ddd',
-    borderRadius: 6,
-    background: '#fff',
-    cursor: 'pointer',
-    fontSize: '0.85rem',
-  },
-  chatList: { display: 'flex', flexDirection: 'column', gap: '0.25rem', overflow: 'auto' },
-  chatLink: {
-    display: 'flex',
-    flexDirection: 'column',
-    padding: '0.5rem 0.6rem',
-    borderRadius: 6,
-    textDecoration: 'none',
-    color: '#333',
-  },
-  chatLinkActive: { background: '#eef', color: '#114' },
-  chatTitle: { fontSize: '0.9rem', fontWeight: 500 },
-  chatMeta: { fontSize: '0.75rem', color: '#888' },
-  empty: { color: '#888', fontSize: '0.85rem' },
-  main: { padding: '1.5rem 2rem', overflow: 'auto' },
-};

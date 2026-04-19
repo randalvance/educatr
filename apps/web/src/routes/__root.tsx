@@ -1,6 +1,10 @@
 /// <reference types="vite/client" />
 import type { ReactNode } from 'react';
 import { Outlet, createRootRoute, HeadContent, Scripts } from '@tanstack/react-router';
+import appCss from '../styles/app.css?url';
+import { ToastProvider } from '../components/toast.tsx';
+import { RouteProgress } from '../components/route-progress.tsx';
+import { applyThemeScript } from '../lib/theme.ts';
 
 export const Route = createRootRoute({
   head: () => ({
@@ -10,6 +14,11 @@ export const Route = createRootRoute({
       { title: 'educatr' },
       { name: 'description', content: 'Learn anything. Explore topics with AI.' },
     ],
+    links: [
+      { rel: 'stylesheet', href: appCss },
+      { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' },
+    ],
+    scripts: [{ children: applyThemeScript }],
   }),
   component: RootComponent,
 });
@@ -17,7 +26,10 @@ export const Route = createRootRoute({
 function RootComponent() {
   return (
     <RootDocument>
-      <Outlet />
+      <ToastProvider>
+        <RouteProgress />
+        <Outlet />
+      </ToastProvider>
     </RootDocument>
   );
 }

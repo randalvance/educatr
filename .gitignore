@@ -16,10 +16,10 @@ build/
 .output/
 .nitro/
 
-# Env
+# Env (varlock schema is committed; resolved env values are not)
 .env
 .env.*
-!.env.example
+!.env.schema
 
 # TS
 *.tsbuildinfo

@@ -2,12 +2,14 @@ import { useState } from 'react';
 import { Link, useRouter } from '@tanstack/react-router';
 import type { Quiz } from '@educatr/shared';
 import { generateQuizFn } from '../server/functions.ts';
+import { useToast } from './toast.tsx';
 
 export function QuizPanel(props: {
   scope: { topicId?: string; groupId?: string };
   quizzes: Quiz[];
 }) {
   const router = useRouter();
+  const toast = useToast();
   const [busy, setBusy] = useState(false);
 
   async function generate() {
@@ -16,31 +18,42 @@ export function QuizPanel(props: {
     try {
       await generateQuizFn({ data: { ...props.scope, questionCount: 8 } });
       await router.invalidate();
+      toast.success('Quiz ready below.');
     } catch (err) {
-      alert(`Quiz generation failed: ${err instanceof Error ? err.message : String(err)}`);
+      console.error('[educatr] quiz generation failed:', err);
+      toast.error("Couldn't write the quiz this time. Give it another try.");
     } finally {
       setBusy(false);
     }
   }
 
   return (
-    <section style={styles.wrap}>
-      <header style={styles.header}>
-        <h3 style={{ margin: 0 }}>Quizzes</h3>
-        <button type="button" onClick={generate} disabled={busy} style={styles.primary}>
+    <section style={{ marginTop: '3rem' }}>
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'baseline',
+          justifyContent: 'space-between',
+          marginBottom: '1rem',
+        }}
+      >
+        <h3 className="section-heading" style={{ marginTop: 0, marginBottom: 0 }}>
+          Quizzes
+        </h3>
+        <button type="button" onClick={generate} disabled={busy} className="btn btn--primary btn--sm">
           {busy ? 'Generating…' : 'Generate quiz'}
         </button>
-      </header>
+      </div>
       {props.quizzes.length === 0 ? (
-        <p style={styles.empty}>No quizzes yet.</p>
+        <p className="muted">No quizzes yet — make one to test what you've learned.</p>
       ) : (
-        <ul style={styles.list}>
+        <ul className="source-list">
           {props.quizzes.map((q) => (
-            <li key={q.id} style={styles.item}>
-              <Link to="/quizzes/$quizId" params={{ quizId: q.id }} style={styles.link}>
+            <li key={q.id} className="source-item" style={{ display: 'flex', justifyContent: 'space-between' }}>
+              <Link to="/quizzes/$quizId" params={{ quizId: q.id }} style={{ fontWeight: 500 }}>
                 {q.title}
               </Link>
-              <span style={styles.meta}>
+              <span className="meta">
                 {q.questions.length} Qs · {new Date(q.createdAt).toLocaleDateString()}
               </span>
             </li>
@@ -50,26 +63,3 @@ export function QuizPanel(props: {
     </section>
   );
 }
-
-const styles: Record<string, React.CSSProperties> = {
-  wrap: { marginTop: '2rem' },
-  header: { display: 'flex', alignItems: 'center', justifyContent: 'space-between' },
-  primary: {
-    padding: '0.4rem 0.9rem',
-    background: '#224',
-    color: '#fff',
-    border: 'none',
-    borderRadius: 6,
-    cursor: 'pointer',
-  },
-  empty: { color: '#888', fontSize: '0.9rem' },
-  list: { listStyle: 'none', padding: 0, margin: 0 },
-  item: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    padding: '0.5rem 0',
-    borderBottom: '1px solid #eee',
-  },
-  link: { color: '#114', textDecoration: 'none', fontWeight: 500 },
-  meta: { color: '#888', fontSize: '0.85rem' },
-};

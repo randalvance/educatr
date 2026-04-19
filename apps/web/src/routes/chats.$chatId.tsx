@@ -1,22 +1,50 @@
 import { useEffect, useRef, useState } from 'react';
+import { z } from 'zod';
 import { createFileRoute, useRouter } from '@tanstack/react-router';
 import { streamSse, type Message } from '@educatr/shared';
 import { getChatFn } from '../server/functions.ts';
+import { useHotkey } from '../lib/hotkeys.ts';
+import { useToast } from '../components/toast.tsx';
+
+const searchSchema = z.object({ q: z.string().optional() });
 
 export const Route = createFileRoute('/chats/$chatId')({
   component: ChatThread,
+  validateSearch: searchSchema,
   loader: ({ params }) => getChatFn({ data: { chatId: params.chatId } }),
 });
 
 function ChatThread() {
   const chat = Route.useLoaderData();
+  const search = Route.useSearch();
   const router = useRouter();
+  const toast = useToast();
   const [messages, setMessages] = useState<Message[]>(chat.messages);
-  const [draft, setDraft] = useState('');
+  const [draft, setDraft] = useState(search.q ?? '');
   const [streaming, setStreaming] = useState<string | null>(null);
   const abortRef = useRef<AbortController | null>(null);
+  const composerRef = useRef<HTMLTextAreaElement | null>(null);
 
-  // When navigating between chats the loader data changes — resync local state.
+  useHotkey('/', () => composerRef.current?.focus());
+  useHotkey('escape', () => abortRef.current?.abort(), { allowInInputs: true });
+
+  // When a pre-filled draft arrives via ?q=, focus the composer and drop the
+  // URL param so reload doesn't re-prime it. Runs once per mount by design.
+  const primed = useRef(false);
+  useEffect(() => {
+    if (primed.current) return;
+    primed.current = true;
+    if (search.q) {
+      composerRef.current?.focus();
+      router.navigate({
+        to: '/chats/$chatId',
+        params: { chatId: chat.id },
+        search: {},
+        replace: true,
+      });
+    }
+  }, [chat.id, router, search.q]);
+
   useEffect(() => {
     setMessages(chat.messages);
     setStreaming(null);
@@ -27,7 +55,6 @@ function ChatThread() {
     if (!content || streaming !== null) return;
     setDraft('');
 
-    // Optimistically render the user message.
     const optimisticUser: Message = {
       id: crypto.randomUUID(),
       chatId: chat.id,
@@ -54,15 +81,14 @@ function ChatThread() {
       }
     } catch (err) {
       if (!(err instanceof DOMException && err.name === 'AbortError')) {
-        console.error(err);
+        console.error('[educatr] chat stream failed:', err);
+        toast.error("Something interrupted the response. Try again in a moment.");
       }
     } finally {
       abortRef.current = null;
       setStreaming(null);
-      // Refresh loader to pull persisted messages (and any updated title).
       await router.invalidate();
     }
-    // Persist local state for immediate render pre-invalidate.
     if (assistantText.length > 0) {
       setMessages((m) => [
         ...m,
@@ -82,37 +108,46 @@ function ChatThread() {
   }
 
   return (
-    <div style={styles.wrap}>
-      <h2 style={styles.title}>{chat.title ?? 'Untitled chat'}</h2>
-      <div style={styles.thread}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 3rem)' }}>
+      <h1 className="chat-title">{chat.title ?? 'Untitled chat'}</h1>
+
+      <div className="thread" style={{ flex: 1 }}>
+        {messages.length === 0 && streaming === null && (
+          <div className="thread-empty">
+            Ask anything to begin — your first question sets the direction.
+          </div>
+        )}
         {messages.map((m) => (
           <MessageBubble key={m.id} message={m} />
         ))}
         {streaming !== null && (
           <MessageBubble
+            streaming
             message={{
               id: 'streaming',
               chatId: chat.id,
               role: 'assistant',
-              content: streaming.length > 0 ? streaming : '…',
+              content: streaming.length > 0 ? streaming : '',
               createdAt: new Date().toISOString(),
             }}
           />
         )}
       </div>
+
       <form
-        style={styles.form}
+        className="composer"
         onSubmit={(e) => {
           e.preventDefault();
           void send();
         }}
       >
         <textarea
+          ref={composerRef}
+          className="textarea"
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
           placeholder="Ask anything…"
           rows={2}
-          style={styles.input}
           onKeyDown={(e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
               e.preventDefault();
@@ -121,11 +156,15 @@ function ChatThread() {
           }}
         />
         {streaming !== null ? (
-          <button type="button" onClick={cancel} style={styles.cancel}>
+          <button type="button" onClick={cancel} className="btn btn--danger">
             Stop
           </button>
         ) : (
-          <button type="submit" disabled={draft.trim().length === 0} style={styles.send}>
+          <button
+            type="submit"
+            disabled={draft.trim().length === 0}
+            className="btn btn--primary"
+          >
             Send
           </button>
         )}
@@ -134,74 +173,19 @@ function ChatThread() {
   );
 }
 
-function MessageBubble({ message }: { message: Message }) {
+function MessageBubble({ message, streaming }: { message: Message; streaming?: boolean }) {
   const isUser = message.role === 'user';
+  const cls = [
+    'bubble',
+    isUser ? 'bubble--user' : 'bubble--assistant',
+    streaming ? 'bubble--streaming' : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
   return (
-    <div style={{ ...styles.bubble, ...(isUser ? styles.bubbleUser : styles.bubbleAssistant) }}>
-      <div style={styles.bubbleRole}>{isUser ? 'You' : 'educatr'}</div>
-      <div style={styles.bubbleBody}>{message.content}</div>
+    <div className={cls}>
+      <span className="bubble__role">{isUser ? 'You' : 'educatr'}</span>
+      <div className="bubble__body">{message.content}</div>
     </div>
   );
 }
-
-const styles: Record<string, React.CSSProperties> = {
-  wrap: {
-    maxWidth: 760,
-    margin: '0 auto',
-    fontFamily: 'system-ui, sans-serif',
-    display: 'flex',
-    flexDirection: 'column',
-    height: 'calc(100vh - 3rem)',
-  },
-  title: { marginTop: 0, marginBottom: '1rem' },
-  thread: {
-    flex: 1,
-    overflow: 'auto',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '0.75rem',
-    paddingBottom: '1rem',
-  },
-  bubble: {
-    padding: '0.75rem 1rem',
-    borderRadius: 10,
-    border: '1px solid #eee',
-    whiteSpace: 'pre-wrap',
-    lineHeight: 1.5,
-  },
-  bubbleUser: { background: '#eef', alignSelf: 'flex-end', maxWidth: '80%' },
-  bubbleAssistant: { background: '#fff', alignSelf: 'flex-start', maxWidth: '90%' },
-  bubbleRole: { fontSize: '0.75rem', color: '#777', marginBottom: '0.25rem' },
-  bubbleBody: {},
-  form: {
-    display: 'grid',
-    gridTemplateColumns: '1fr auto',
-    gap: '0.5rem',
-    paddingTop: '0.5rem',
-    borderTop: '1px solid #eee',
-  },
-  input: {
-    padding: '0.5rem 0.75rem',
-    border: '1px solid #ddd',
-    borderRadius: 8,
-    resize: 'vertical',
-    fontFamily: 'inherit',
-    fontSize: '0.95rem',
-  },
-  send: {
-    padding: '0.5rem 1rem',
-    border: 'none',
-    background: '#224',
-    color: '#fff',
-    borderRadius: 8,
-    cursor: 'pointer',
-  },
-  cancel: {
-    padding: '0.5rem 1rem',
-    border: '1px solid #c00',
-    background: '#fff',
-    color: '#c00',
-    borderRadius: 8,
-    cursor: 'pointer',
-  },
-};

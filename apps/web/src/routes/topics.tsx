@@ -1,9 +1,12 @@
+import { useState } from 'react';
 import { Link, Outlet, createFileRoute, useRouter } from '@tanstack/react-router';
 import {
   listTopicsFn,
   listTopicGroupsFn,
   recomputeGroupsFn,
 } from '../server/functions.ts';
+import { ThemeToggle } from '../components/theme-toggle.tsx';
+import { useToast } from '../components/toast.tsx';
 
 export const Route = createFileRoute('/topics')({
   component: TopicsLayout,
@@ -16,123 +19,103 @@ export const Route = createFileRoute('/topics')({
 function TopicsLayout() {
   const { topics, groups } = Route.useLoaderData();
   const router = useRouter();
+  const toast = useToast();
+  const [finding, setFinding] = useState(false);
 
   async function handleRegroup() {
-    await recomputeGroupsFn();
-    await router.invalidate();
+    if (finding) return;
+    setFinding(true);
+    try {
+      const { groupsCreated } = await recomputeGroupsFn();
+      await router.invalidate();
+      toast.success(
+        groupsCreated === 0
+          ? 'No new groups found yet — add a few more Topics and try again.'
+          : `Made ${groupsCreated} group${groupsCreated === 1 ? '' : 's'}.`,
+      );
+    } catch (err) {
+      console.error('[educatr] find groups failed:', err);
+      toast.error("Couldn't find groups right now. Give it a moment and try again.");
+    } finally {
+      setFinding(false);
+    }
   }
 
   return (
-    <div style={styles.shell}>
-      <aside style={styles.sidebar}>
-        <div style={styles.sidebarHeader}>
-          <Link to="/" style={styles.brand}>
+    <div className="app-shell">
+      <aside className="sidebar">
+        <div className="sidebar__header">
+          <Link to="/" className="sidebar__brand">
             educatr
           </Link>
-          <Link to="/chats" style={styles.navLink}>
-            chats
-          </Link>
+          <nav className="sidebar__nav-links">
+            <Link to="/chats">Chats</Link>
+          </nav>
         </div>
 
-        <div style={styles.sectionHeader}>
+        <div className="sidebar__section">
           <span>Groups</span>
-          <button type="button" style={styles.smallButton} onClick={handleRegroup}>
-            Recompute
-          </button>
+          {topics.length >= 2 && (
+            <button
+              type="button"
+              className="btn btn--ghost btn--sm"
+              onClick={handleRegroup}
+              disabled={finding}
+              title="Find related Topics and group them together. Run again after you've added new material."
+            >
+              {finding ? 'Finding…' : 'Find groups'}
+            </button>
+          )}
         </div>
         {groups.length === 0 ? (
-          <p style={styles.empty}>No groups yet.</p>
+          <p className="sidebar__empty">
+            {topics.length < 2
+              ? 'Groups appear once you have a few Topics.'
+              : 'No groups yet — use Find groups to collect related Topics.'}
+          </p>
         ) : (
           groups.map((g) => (
             <Link
               key={g.id}
               to="/topic-groups/$groupId"
               params={{ groupId: g.id }}
-              style={styles.sidebarLink}
-              activeProps={{ style: { ...styles.sidebarLink, ...styles.sidebarLinkActive } }}
+              className="sidebar__link"
+              activeProps={{ className: 'sidebar__link sidebar__link--active' }}
             >
-              {g.title}
+              <span className="sidebar__link-title">{g.title}</span>
             </Link>
           ))
         )}
 
-        <div style={styles.sectionHeader}>Topics</div>
+        <div className="sidebar__section">Topics</div>
         {topics.length === 0 ? (
-          <p style={styles.empty}>Chat to create Topics.</p>
+          <p className="sidebar__empty">
+            Start a chat — Topics show up here on their own.
+          </p>
         ) : (
           topics.map((t) => (
             <Link
               key={t.id}
               to="/topics/$topicId"
               params={{ topicId: t.id }}
-              style={styles.sidebarLink}
-              activeProps={{ style: { ...styles.sidebarLink, ...styles.sidebarLinkActive } }}
+              className="sidebar__link"
+              activeProps={{ className: 'sidebar__link sidebar__link--active' }}
             >
-              <span style={styles.topicTitle}>{t.title}</span>
-              <span style={styles.topicMeta}>{new Date(t.updatedAt).toLocaleDateString()}</span>
+              <span className="sidebar__link-title">{t.title}</span>
+              <span className="sidebar__link-meta">
+                {new Date(t.updatedAt).toLocaleDateString()}
+              </span>
             </Link>
           ))
         )}
+
+        <div className="sidebar__footer">
+          <ThemeToggle />
+        </div>
       </aside>
-      <section style={styles.main}>
+      <section className="main">
         <Outlet />
       </section>
     </div>
   );
 }
-
-const styles: Record<string, React.CSSProperties> = {
-  shell: { display: 'grid', gridTemplateColumns: '260px 1fr', minHeight: '100vh' },
-  sidebar: {
-    borderRight: '1px solid #eee',
-    padding: '1rem',
-    background: '#fafafa',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '0.25rem',
-    overflow: 'auto',
-    fontFamily: 'system-ui, sans-serif',
-  },
-  sidebarHeader: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: '0.5rem',
-  },
-  brand: { fontWeight: 600, textDecoration: 'none', color: '#111' },
-  navLink: { fontSize: '0.85rem', color: '#555', textDecoration: 'none' },
-  sectionHeader: {
-    fontSize: '0.75rem',
-    textTransform: 'uppercase',
-    letterSpacing: '0.05em',
-    color: '#888',
-    marginTop: '1rem',
-    marginBottom: '0.25rem',
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  smallButton: {
-    padding: '0.15rem 0.4rem',
-    border: '1px solid #ddd',
-    borderRadius: 4,
-    background: '#fff',
-    cursor: 'pointer',
-    fontSize: '0.7rem',
-    textTransform: 'none',
-    letterSpacing: 0,
-  },
-  sidebarLink: {
-    display: 'flex',
-    flexDirection: 'column',
-    padding: '0.4rem 0.5rem',
-    borderRadius: 6,
-    textDecoration: 'none',
-    color: '#333',
-  },
-  sidebarLinkActive: { background: '#eef', color: '#114' },
-  topicTitle: { fontSize: '0.9rem', fontWeight: 500 },
-  topicMeta: { fontSize: '0.7rem', color: '#888' },
-  empty: { color: '#888', fontSize: '0.8rem' },
-  main: { padding: '1.5rem 2rem', overflow: 'auto', fontFamily: 'system-ui, sans-serif' },
-};

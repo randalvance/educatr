@@ -78,7 +78,7 @@
 - [x] 9.5 Web UI: quiz-taking flow with per-question feedback and overall score
 - [x] 9.6 Web UI: list of prior quizzes on a Topic / Group
 
-## 10. Flashcard generation
+## 10. Flashcard generation *(deferred — post-MVP)*
 
 - [ ] 10.1 Zod schemas for flashcard deck + card (front, back, optional hint) in `packages/shared`
 - [ ] 10.2 `generateFlashcards(topicId | groupId, options)` server function
@@ -87,7 +87,7 @@
 - [ ] 10.5 Web UI: flip-through study session (forward/back, position indicator)
 - [ ] 10.6 Web UI: list of prior decks on a Topic / Group
 
-## 11. Visual explainer
+## 11. Visual explainer *(deferred — post-MVP)*
 
 - [ ] 11.1 Zod schema for visual explainer (Mermaid source + narrative markdown) in `packages/shared`
 - [ ] 11.2 `generateVisualExplainer(topicId)` server function

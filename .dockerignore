@@ -1,0 +1,14 @@
+**/node_modules
+**/.vercel
+**/.output
+**/.nitro
+**/.expo
+**/dist
+**/build
+.git
+.claude
+openspec
+.env
+.env.*
+!.env.example
+apps/web/src/routeTree.gen.ts
