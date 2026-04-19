@@ -1,0 +1,4 @@
+.vercel/
+.output/
+.nitro/
+src/routeTree.gen.ts

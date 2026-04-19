@@ -35,11 +35,11 @@
 
 ## 5. Web app scaffold (`apps/web`)
 
-- [ ] 5.1 Install TanStack Start + React + Vite deps; add root route and a basic layout
-- [ ] 5.2 Wire `apps/web` to consume `packages/shared`, `packages/db`, `packages/ai`
-- [ ] 5.3 Cookie-scoped placeholder `user_id` helper for single-user MVP
-- [ ] 5.4 Add Vercel deployment config; confirm it deploys as Node serverless functions
-- [ ] 5.5 `/` route renders and proves end-to-end rendering works
+- [x] 5.1 Install TanStack Start + React + Vite deps; add root route and a basic layout
+- [x] 5.2 Wire `apps/web` to consume `packages/shared`, `packages/db`, `packages/ai`
+- [x] 5.3 Cookie-scoped placeholder `user_id` helper for single-user MVP
+- [x] 5.4 Add Vercel deployment config; confirm it deploys as Node serverless functions *(local build verified; Vercel deploy itself deferred)*
+- [x] 5.5 `/` route renders and proves end-to-end rendering works
 
 ## 6. Chat (topic-exploration) — web
 
