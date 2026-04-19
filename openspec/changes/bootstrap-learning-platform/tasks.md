@@ -9,29 +9,29 @@
 
 ## 2. Shared package (`packages/shared`)
 
-- [ ] 2.1 Export Zod schemas for core entities: `Chat`, `Message`, `Topic`, `TopicGroup`, `Quiz`, `Flashcard`, `VisualExplainer`
-- [ ] 2.2 Export derived TypeScript types from the Zod schemas
-- [ ] 2.3 Implement isomorphic `apiClient` built on `fetch`, with typed request/response methods for every server endpoint
-- [ ] 2.4 Implement SSE consumer helper usable in both web and React Native (wraps `fetch` streaming / RN SSE polyfill)
-- [ ] 2.5 Verify the package has zero Node/server-only imports (build succeeds when bundled for RN)
+- [x] 2.1 Export Zod schemas for core entities: `Chat`, `Message`, `Topic`, `TopicGroup`, `Quiz`, `Flashcard`, `VisualExplainer`
+- [x] 2.2 Export derived TypeScript types from the Zod schemas
+- [x] 2.3 Implement isomorphic `apiClient` built on `fetch`, with typed request/response methods for every server endpoint
+- [x] 2.4 Implement SSE consumer helper usable in both web and React Native (wraps `fetch` streaming / RN SSE polyfill)
+- [x] 2.5 Verify the package has zero Node/server-only imports (build succeeds when bundled for RN)
 
 ## 3. Database package (`packages/db`)
 
-- [ ] 3.1 Install Drizzle ORM + `drizzle-kit` + Postgres driver; create `client.ts` singleton
-- [ ] 3.2 Create initial migration enabling the `pgvector` extension
-- [ ] 3.3 Define schema: `chats`, `messages` (with `user_id` on all user-owned tables)
-- [ ] 3.4 Define schema: `topics` (incl. `slug`, `embedding vector`, timestamps), `topic_groups`, `topic_sources`
-- [ ] 3.5 Define schema: `quizzes`, `quiz_questions`, `flashcard_decks`, `flashcards`, `visual_explainers`
-- [ ] 3.6 Generate and run migrations locally; verify schema matches expectations
+- [x] 3.1 Install Drizzle ORM + `drizzle-kit` + Postgres driver; create `client.ts` singleton
+- [x] 3.2 Create initial migration enabling the `pgvector` extension
+- [x] 3.3 Define schema: `chats`, `messages` (with `user_id` on all user-owned tables)
+- [x] 3.4 Define schema: `topics` (incl. `slug`, `embedding vector`, timestamps), `topic_groups`, `topic_sources`
+- [x] 3.5 Define schema: `quizzes`, `quiz_questions`, `flashcard_decks`, `flashcards`, `visual_explainers`
+- [ ] 3.6 Generate and run migrations locally; verify schema matches expectations *(generate complete — run step deferred; requires live `DATABASE_URL`)*
 
 ## 4. AI gateway package (`packages/ai`)
 
-- [ ] 4.1 Install `openai` SDK; configure client with OpenRouter base URL + API key
-- [ ] 4.2 Implement `chat.stream({ messages, model })` exposing an async iterable of tokens
-- [ ] 4.3 Implement `extract<T>` with Zod-validated structured JSON output and one retry on schema failure
-- [ ] 4.4 Implement `embed` returning numeric vectors; expose dimensionality constant
-- [ ] 4.5 Make chat/extraction/embedding models configurable via env vars with sensible defaults
-- [ ] 4.6 Typed error classes (`AIConfigError`, `AIStreamError`, `AIValidationError`) and a retry helper
+- [x] 4.1 Install `openai` SDK; configure client with OpenRouter base URL + API key
+- [x] 4.2 Implement `chat.stream({ messages, model })` exposing an async iterable of tokens
+- [x] 4.3 Implement `extract<T>` with Zod-validated structured JSON output and one retry on schema failure
+- [x] 4.4 Implement `embed` returning numeric vectors; expose dimensionality constant
+- [x] 4.5 Make chat/extraction/embedding models configurable via env vars with sensible defaults
+- [x] 4.6 Typed error classes (`AIConfigError`, `AIStreamError`, `AIValidationError`) and a retry helper
 
 ## 5. Web app scaffold (`apps/web`)
 
