@@ -1,4 +1,4 @@
-import { createFileRoute } from '@tanstack/react-router';
+import { Link, createFileRoute } from '@tanstack/react-router';
 
 export const Route = createFileRoute('/')({
   component: Home,
@@ -17,8 +17,20 @@ function Home() {
     >
       <h1 style={{ marginBottom: '0.5rem' }}>educatr</h1>
       <p style={{ color: '#555' }}>Learn anything. Explore topics with AI.</p>
-      <p style={{ marginTop: '2rem', color: '#888', fontSize: '0.9rem' }}>
-        Scaffold up. Chat, topics, quizzes, flashcards, and visual explainers coming next.
+      <p style={{ marginTop: '2rem' }}>
+        <Link
+          to="/chats"
+          style={{
+            display: 'inline-block',
+            padding: '0.6rem 1rem',
+            background: '#224',
+            color: '#fff',
+            borderRadius: 8,
+            textDecoration: 'none',
+          }}
+        >
+          Open chats →
+        </Link>
       </p>
     </main>
   );

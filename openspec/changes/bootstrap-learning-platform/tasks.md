@@ -43,31 +43,31 @@
 
 ## 6. Chat (topic-exploration) — web
 
-- [ ] 6.1 Server functions: create-chat / list-chats / get-chat-with-messages (schemas from `packages/shared`)
-- [ ] 6.2 Server route: SSE chat-stream endpoint — persist user message, call `ai/chat.stream`, forward tokens, persist assistant message on close
-- [ ] 6.3 Auto-generate chat title after first exchange completes
-- [ ] 6.4 Web UI: chat list sidebar + chat thread view with streaming token rendering
-- [ ] 6.5 Handle interruption: cancel stream cleanly, persist partial assistant message
-- [ ] 6.6 System prompt tuned for exploration (teacher persona, structured explanations)
+- [x] 6.1 Server functions: create-chat / list-chats / get-chat-with-messages (schemas from `packages/shared`)
+- [x] 6.2 Server route: SSE chat-stream endpoint — persist user message, call `ai/chat.stream`, forward tokens, persist assistant message on close
+- [x] 6.3 Auto-generate chat title after first exchange completes
+- [x] 6.4 Web UI: chat list sidebar + chat thread view with streaming token rendering
+- [x] 6.5 Handle interruption: cancel stream cleanly, persist partial assistant message
+- [x] 6.6 System prompt tuned for exploration (teacher persona, structured explanations)
 
 ## 7. Topic extraction pipeline
 
-- [ ] 7.1 Zod schema for a Topic candidate (`title`, `summary`, `body_markdown`, `tags`) in `packages/shared`
-- [ ] 7.2 Extractor server function that takes latest turn + short prior context and returns 0..N candidates
-- [ ] 7.3 Run extractor after streamed response completes, non-blocking to UX
-- [ ] 7.4 On extractor error or invalid output after retry, log and skip — never break the chat
+- [x] 7.1 Zod schema for a Topic candidate (`title`, `summary`, `body_markdown`, `tags`) in `packages/shared`
+- [x] 7.2 Extractor server function that takes latest turn + short prior context and returns 0..N candidates
+- [x] 7.3 Run extractor after streamed response completes, non-blocking to UX
+- [x] 7.4 On extractor error or invalid output after retry, log and skip — never break the chat
 
 ## 8. Topic management + dedup
 
-- [ ] 8.1 Title → slug normalization utility
-- [ ] 8.2 Lexical dedup: on create, lookup by slug in user scope; merge if found
-- [ ] 8.3 Compute embedding for `title + summary` via `packages/ai`; store on row
-- [ ] 8.4 pgvector nearest-neighbor query with configurable duplicate threshold (default 0.15)
-- [ ] 8.5 Merge flow: link source message to existing Topic; append new body as a revision/note
-- [ ] 8.6 CRUD server functions: list / get / update / delete Topic
-- [ ] 8.7 Web Topic detail page: title, summary, body, tags, sources, linked artifacts
-- [ ] 8.8 Grouping routine: cluster Topics within related threshold (0.15–0.35); write `topic_groups` + link members
-- [ ] 8.9 Web Topic group page: list members with summaries; "generate for group" actions
+- [x] 8.1 Title → slug normalization utility
+- [x] 8.2 Lexical dedup: on create, lookup by slug in user scope; merge if found
+- [x] 8.3 Compute embedding for `title + summary` via `packages/ai`; store on row
+- [x] 8.4 pgvector nearest-neighbor query with configurable duplicate threshold (default 0.15)
+- [x] 8.5 Merge flow: link source message to existing Topic; append new body as a revision/note
+- [x] 8.6 CRUD server functions: list / get / update / delete Topic
+- [x] 8.7 Web Topic detail page: title, summary, body, tags, sources, linked artifacts
+- [x] 8.8 Grouping routine: cluster Topics within related threshold (0.15–0.35); write `topic_groups` + link members
+- [x] 8.9 Web Topic group page: list members with summaries; "generate for group" actions *(generation hooks land in Phases 9–11)*
 
 ## 9. Quiz generation
 
