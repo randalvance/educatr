@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { Link, createFileRoute, useRouter } from '@tanstack/react-router';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import {
   deleteTopicFn,
   getTopicFn,
@@ -114,7 +116,9 @@ function TopicDetail() {
 
           <p className="topic-summary">{topic.summary}</p>
 
-          <pre className="topic-body">{topic.bodyMarkdown}</pre>
+          <div className="topic-body">
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>{topic.bodyMarkdown}</ReactMarkdown>
+          </div>
 
           <QuizPanel scope={{ topicId: topic.id }} quizzes={quizzes} />
 

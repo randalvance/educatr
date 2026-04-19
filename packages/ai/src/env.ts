@@ -19,12 +19,10 @@ export function requireApiKey(): string {
 }
 
 export function resolveModel(task: keyof typeof DEFAULT_MODELS): string {
-  switch (task) {
-    case 'chat':
-      return process.env.OPENROUTER_MODEL_CHAT ?? DEFAULT_MODELS.chat;
-    case 'extraction':
-      return process.env.OPENROUTER_MODEL_EXTRACTION ?? DEFAULT_MODELS.extraction;
-    case 'embedding':
-      return process.env.OPENROUTER_MODEL_EMBEDDING ?? DEFAULT_MODELS.embedding;
-  }
+  const override = {
+    chat: process.env.OPENROUTER_MODEL_CHAT,
+    extraction: process.env.OPENROUTER_MODEL_EXTRACTION,
+    embedding: process.env.OPENROUTER_MODEL_EMBEDDING,
+  }[task]?.trim();
+  return override && override.length > 0 ? override : DEFAULT_MODELS[task];
 }
