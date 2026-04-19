@@ -1,13 +1,20 @@
 import { Link, createFileRoute } from '@tanstack/react-router';
-import { getTopicGroupFn } from '../server/functions.ts';
+import { getTopicGroupFn, listQuizzesFn } from '../server/functions.ts';
+import { QuizPanel } from '../components/quiz-panel.tsx';
 
 export const Route = createFileRoute('/topic-groups/$groupId')({
   component: TopicGroupDetail,
-  loader: ({ params }) => getTopicGroupFn({ data: { groupId: params.groupId } }),
+  loader: async ({ params }) => {
+    const [detail, quizzes] = await Promise.all([
+      getTopicGroupFn({ data: { groupId: params.groupId } }),
+      listQuizzesFn({ data: { groupId: params.groupId } }),
+    ]);
+    return { ...detail, quizzes };
+  },
 });
 
 function TopicGroupDetail() {
-  const { group, topics } = Route.useLoaderData();
+  const { group, topics, quizzes } = Route.useLoaderData();
 
   return (
     <article
@@ -48,10 +55,18 @@ function TopicGroupDetail() {
         </ul>
       )}
 
-      <div style={{ marginTop: '2rem', padding: '1rem', border: '1px dashed #ccc', borderRadius: 8 }}>
+      <QuizPanel scope={{ groupId: group.id }} quizzes={quizzes} />
+
+      <div
+        style={{
+          marginTop: '2rem',
+          padding: '1rem',
+          border: '1px dashed #ccc',
+          borderRadius: 8,
+        }}
+      >
         <p style={{ margin: 0, color: '#666', fontSize: '0.9rem' }}>
-          Generation actions (quiz / flashcards / visual explainer) for this group will appear
-          here once Phases 9–11 land.
+          Flashcards and visual explainers for this group arrive in Phases 10–11.
         </p>
       </div>
     </article>

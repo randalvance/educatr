@@ -71,12 +71,12 @@
 
 ## 9. Quiz generation
 
-- [ ] 9.1 Zod schemas for quiz + question types (MCQ, T/F, short-answer) in `packages/shared`
-- [ ] 9.2 `generateQuiz(topicId | groupId, options)` server function using `ai/extract`
-- [ ] 9.3 Persist quiz + questions; link to source Topic or TopicGroup
-- [ ] 9.4 Web UI: "Generate quiz" action on Topic and Group pages
-- [ ] 9.5 Web UI: quiz-taking flow with per-question feedback and overall score
-- [ ] 9.6 Web UI: list of prior quizzes on a Topic / Group
+- [x] 9.1 Zod schemas for quiz + question types (MCQ, T/F, short-answer) in `packages/shared`
+- [x] 9.2 `generateQuiz(topicId | groupId, options)` server function using `ai/extract`
+- [x] 9.3 Persist quiz + questions; link to source Topic or TopicGroup
+- [x] 9.4 Web UI: "Generate quiz" action on Topic and Group pages
+- [x] 9.5 Web UI: quiz-taking flow with per-question feedback and overall score
+- [x] 9.6 Web UI: list of prior quizzes on a Topic / Group
 
 ## 10. Flashcard generation
 

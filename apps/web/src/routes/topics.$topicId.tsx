@@ -1,14 +1,26 @@
 import { useState } from 'react';
 import { Link, createFileRoute, useRouter } from '@tanstack/react-router';
-import { deleteTopicFn, getTopicFn, updateTopicFn } from '../server/functions.ts';
+import {
+  deleteTopicFn,
+  getTopicFn,
+  listQuizzesFn,
+  updateTopicFn,
+} from '../server/functions.ts';
+import { QuizPanel } from '../components/quiz-panel.tsx';
 
 export const Route = createFileRoute('/topics/$topicId')({
   component: TopicDetail,
-  loader: ({ params }) => getTopicFn({ data: { topicId: params.topicId } }),
+  loader: async ({ params }) => {
+    const [detail, quizzes] = await Promise.all([
+      getTopicFn({ data: { topicId: params.topicId } }),
+      listQuizzesFn({ data: { topicId: params.topicId } }),
+    ]);
+    return { ...detail, quizzes };
+  },
 });
 
 function TopicDetail() {
-  const { topic, sources } = Route.useLoaderData();
+  const { topic, sources, quizzes } = Route.useLoaderData();
   const router = useRouter();
   const [editing, setEditing] = useState(false);
   const [title, setTitle] = useState(topic.title);
@@ -101,6 +113,8 @@ function TopicDetail() {
           <p style={styles.summary}>{topic.summary}</p>
 
           <pre style={styles.body}>{topic.bodyMarkdown}</pre>
+
+          <QuizPanel scope={{ topicId: topic.id }} quizzes={quizzes} />
 
           <section style={{ marginTop: '2rem' }}>
             <h3>Sources</h3>

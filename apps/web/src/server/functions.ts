@@ -1,10 +1,12 @@
 import { createServerFn } from '@tanstack/react-start';
 import { z } from 'zod';
+import { GenerateQuizInput } from '@educatr/shared';
 import {
   createEmptyChat,
   getChatWithMessages,
   listChatsForUser,
 } from './chats.ts';
+import { generateQuiz, getQuiz, listQuizzesForScope } from './quizzes.ts';
 import {
   deleteTopic,
   getTopic,
@@ -89,3 +91,33 @@ export const recomputeGroupsFn = createServerFn({ method: 'POST' }).handler(asyn
   const userId = getOrCreateUserId();
   return recomputeTopicGroups(userId);
 });
+
+// --- Quizzes ---
+
+export const generateQuizFn = createServerFn({ method: 'POST' })
+  .inputValidator(GenerateQuizInput)
+  .handler(async ({ data }) => {
+    const userId = getOrCreateUserId();
+    return generateQuiz(userId, data);
+  });
+
+export const listQuizzesFn = createServerFn({ method: 'GET' })
+  .inputValidator(
+    z.object({
+      topicId: z.string().uuid().optional(),
+      groupId: z.string().uuid().optional(),
+    }),
+  )
+  .handler(async ({ data }) => {
+    const userId = getOrCreateUserId();
+    return listQuizzesForScope(userId, data);
+  });
+
+export const getQuizFn = createServerFn({ method: 'GET' })
+  .inputValidator(z.object({ quizId: z.string().uuid() }))
+  .handler(async ({ data }) => {
+    const userId = getOrCreateUserId();
+    const quiz = await getQuiz(data.quizId, userId);
+    if (!quiz) throw new Error('Quiz not found');
+    return quiz;
+  });
